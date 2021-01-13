@@ -42,7 +42,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                 }).sorted((menuBefore,menuAfter)->{
                     return (menuBefore.getSort()==null?0:menuBefore.getSort())-(menuAfter.getSort()==null?0:menuAfter.getSort());
                 }).collect(Collectors.toList());
-        return entities;
+        return level1Menu;
     }
 
     @Override
