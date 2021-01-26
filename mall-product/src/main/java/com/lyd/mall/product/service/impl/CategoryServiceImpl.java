@@ -10,8 +10,7 @@ import com.lyd.mall.product.entity.CategoryEntity;
 import com.lyd.mall.product.service.CategoryService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -50,6 +49,38 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         // TODO 1.检查当前删除的菜单，是否被别的地方引用
         // 逻辑删除
         baseMapper.deleteBatchIds(categoryIds);
+    }
+
+    /**
+     * @Description: 根据当前catelogid想上查找父节点路径
+     * @Param: [catelogId]
+     * @return: java.lang.Long[]
+     * @Author: Liuyunda
+     * @Date: 2021/1/26
+     */
+    @Override
+    public Long[] findCatelogPath(Long catelogId) {
+        List<Long> paths = new ArrayList<>();
+        List<Long> parentPath = findParentPath(catelogId, paths);
+        Collections.reverse(parentPath);
+        return parentPath.toArray(new Long[parentPath.size()]);
+    }
+
+    /**
+     * @Description: 递归找分组id的父节点
+     * @Param: [catelogId, paths]
+     * @return: java.util.List<java.lang.Long>
+     * @Author: Liuyunda
+     * @Date: 2021/1/26
+     */
+    private List<Long> findParentPath (Long catelogId,List<Long> paths) {
+        // 1.收集当前节点id
+        paths.add(catelogId);
+        CategoryEntity byId = this.getById(catelogId);
+        if (byId.getParentCid()!=0){
+            findParentPath(byId.getParentCid(),paths);
+        }
+        return paths;
     }
 
     /**
