@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "spring.application.alicloud.bucket",
+      "type": "java.lang.String",
+      "description": "Description for spring.application.alicloud.bucket."
+  }
+] }
