@@ -7,8 +7,11 @@ import com.lyd.common.utils.PageUtils;
 import com.lyd.common.utils.Query;
 import com.lyd.mall.product.dao.CategoryDao;
 import com.lyd.mall.product.entity.CategoryEntity;
+import com.lyd.mall.product.service.CategoryBrandRelationService;
 import com.lyd.mall.product.service.CategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,6 +19,9 @@ import java.util.stream.Collectors;
 
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
+
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -64,6 +70,20 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<Long> parentPath = findParentPath(catelogId, paths);
         Collections.reverse(parentPath);
         return parentPath.toArray(new Long[parentPath.size()]);
+    }
+
+    /**
+     * @Description: 级联更新所有关联数据
+     * @Param: [category]
+     * @return: void
+     * @Author: Liuyunda
+     * @Date: 2021/2/1
+     */
+    @Transactional
+    @Override
+    public void updateCascade(CategoryEntity category) {
+       this.updateById(category);
+       categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
     }
 
     /**
