@@ -27,4 +27,6 @@ server:
 logging:
   level:
     com.lyd.mall: debug
-
+ribbon:
+  ConnectTimeout=5000
+  ReadTimeout=5000
