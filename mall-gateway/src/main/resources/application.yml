@@ -2,14 +2,14 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: mall-gateway-baidu
-          uri: https://www.baidu.com
-          predicates:
-            - Query=url,baidu
-        - id: mall-gateway-qq
-          uri: https://www.qq.com
-          predicates:
-            - Query=url,qq
+#        - id: mall-gateway-baidu
+#          uri: https://www.baidu.com
+#          predicates:
+#            - Query=url,baidu
+#        - id: mall-gateway-qq
+#          uri: https://www.qq.com
+#          predicates:
+#            - Query=url,qq
 
         - id: product_route
           uri: lb://mall-product
@@ -23,6 +23,23 @@ spring:
             - Path=/api/thirdparty/**
           filters:
             - RewritePath=/api/thirdparty(?<segment>.*),/$\{segment}
+
+
+        - id: member_route
+          uri: lb://mall-member
+          predicates:
+            - Path=/api/member/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment}
+
+
+        - id: ware_route
+          uri: lb://mall-ware
+          predicates:
+            - Path=/api/ware/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment}
+
         - id: admin_route
           uri: lb://renren-fast
           predicates:

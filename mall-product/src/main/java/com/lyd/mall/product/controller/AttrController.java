@@ -2,13 +2,16 @@ package com.lyd.mall.product.controller;
 
 import com.lyd.common.utils.PageUtils;
 import com.lyd.common.utils.R;
+import com.lyd.mall.product.entity.ProductAttrValueEntity;
 import com.lyd.mall.product.service.AttrService;
+import com.lyd.mall.product.service.ProductAttrValueService;
 import com.lyd.mall.product.vo.AttrRespVo;
 import com.lyd.mall.product.vo.AttrVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
@@ -24,6 +27,14 @@ import java.util.Map;
 public class AttrController {
     @Autowired
     private AttrService attrService;
+
+    @Autowired
+    private ProductAttrValueService productAttrValueService;
+    @GetMapping("/base/listforspu/{spuId}")
+    public R baseAttrListForSpu(@PathVariable("spuId")Long spuId){
+        List<ProductAttrValueEntity> entities = productAttrValueService.baseAttrListForSpu(spuId);
+        return R.ok().put("data",entities);
+    }
 
     /**
      * @Description: 查询规格参数（模糊查询）
@@ -65,6 +76,16 @@ public class AttrController {
     @RequestMapping("/save")
     public R save(@RequestBody AttrVo attr) {
         attrService.saveAttr(attr);
+
+        return R.ok();
+    }
+
+    /**
+     * 修改
+     */
+    @PostMapping("/update/{spuId}")
+    public R updateSpuAttr(@PathVariable("spuId")Long spuId,@RequestBody List<ProductAttrValueEntity> entities) {
+        productAttrValueService.updateSpuAttr(spuId,entities);
 
         return R.ok();
     }
