@@ -10,6 +10,7 @@ import com.lyd.mall.ware.dao.WareSkuDao;
 import com.lyd.mall.ware.entity.WareSkuEntity;
 import com.lyd.mall.ware.feign.ProductFeignService;
 import com.lyd.mall.ware.service.WareSkuService;
+import com.lyd.mall.ware.vo.SkuHasStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("wareSkuService")
@@ -72,6 +74,20 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         }else {
             wareSkuDao.addStock(skuId,wareId,skuNum);
         }
+    }
+
+    @Override
+    public List<SkuHasStockVo> getSkusHasStock(List<Long> skuIds) {
+
+        skuIds.stream().map(skuId->{
+            SkuHasStockVo skuHasStockVo = new SkuHasStockVo();
+            Long count = this.baseMapper.getSkuStock(skuId);
+            skuHasStockVo.setSkuId(skuId);
+            skuHasStockVo.setHasStock(count>0);
+            return skuHasStockVo;
+        }).collect(Collectors.toList());
+
+        return null;
     }
 
 }
