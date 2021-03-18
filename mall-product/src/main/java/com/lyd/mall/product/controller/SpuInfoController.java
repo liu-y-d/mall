@@ -28,7 +28,7 @@ public class SpuInfoController {
     /**
      * 上架
      */
-    @PostMapping("/{spuId}/up}")
+    @RequestMapping("/up/{spuId}")
     public R spuUp(@PathVariable("spuId")Long spuId) {
         spuInfoService.up(spuId);
 
