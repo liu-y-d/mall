@@ -1,8 +1,10 @@
 package com.lyd.mall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lyd.common.constant.ProductConstant;
 import com.lyd.common.to.SkuHasStockVo;
 import com.lyd.common.to.SkuReductionTo;
 import com.lyd.common.to.SpuBoundTo;
@@ -13,6 +15,7 @@ import com.lyd.common.utils.R;
 import com.lyd.mall.product.dao.SpuInfoDao;
 import com.lyd.mall.product.entity.*;
 import com.lyd.mall.product.feign.CouponFeignService;
+import com.lyd.mall.product.feign.SearchFeignService;
 import com.lyd.mall.product.feign.WareFeignService;
 import com.lyd.mall.product.service.*;
 import com.lyd.mall.product.vo.*;
@@ -62,6 +65,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     WareFeignService wareFeignService;
+
+    @Autowired
+    SearchFeignService searchFeignService;
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<SpuInfoEntity> page = this.page(
@@ -244,8 +250,11 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         // TODO 发送远程调用，库存系统查询是否有库存
         Map<Long, Boolean> stockMap = null;
         try {
-            R<List<SkuHasStockVo>> skusHasStock = wareFeignService.getSkusHasStock(skuIds);
-            stockMap = skusHasStock.getData().stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getHasStock()));
+            R r = wareFeignService.getSkusHasStock(skuIds);
+            // TypeReference<List<SkuHasStockVo>> typeReference = new TypeReference<List<SkuHasStockVo>>() {};
+            // stockMap = r.getData(typeReference).stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, SkuHasStockVo::getHasStock));
+            TypeReference<List<SkuHasStockVo>> typeReference = new TypeReference<List<SkuHasStockVo>>(){};
+            stockMap = r.getData(typeReference).stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, SkuHasStockVo::getHasStock));
         } catch (Exception e) {
             log.error("库存服务出现异常:原因{}",e);
         }
@@ -282,6 +291,20 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         }).collect(Collectors.toList());
 
         // TODO 将数据发送给Es保存
+        R r = searchFeignService.productStatsUp(upProductsk);
+        if ((Integer)r.get("code")!=0){
+            log.error("远程调用失败");
+            // TODO 重复调用？接口幂等性
+            // fegin调用流程
+            /**
+             * 1.构造请求数据，将对象转为json
+             * 2.发送请求进行执行（执行成功会解码响应数据）
+             * 3.执行请求，会有重试机制（默认关闭）
+             */
+        }else {
+            // TODO 改当前spu状态
+            this.baseMapper.updateSpuStatus(spuId, ProductConstant.StatusEnum.UP_SPU.getCode());
+        }
     }
 
 
