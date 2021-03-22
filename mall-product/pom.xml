@@ -20,6 +20,12 @@
     </properties>
 
     <dependencies>
+
+        <!--thymeleaf模版引擎-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
         <!--阿里云文件存储原生-->
         <!--<dependency>-->
         <!--    <groupId>com.aliyun.oss</groupId>-->
