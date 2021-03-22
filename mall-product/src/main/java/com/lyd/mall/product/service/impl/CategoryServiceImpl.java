@@ -86,6 +86,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
        categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
     }
 
+    @Override
+    public List<CategoryEntity> getLevel1Categorys() {
+        List<CategoryEntity> categoryEntities = this.baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
+        return categoryEntities;
+    }
+
     /**
      * @Description: 递归找分组id的父节点
      * @Param: [catelogId, paths]

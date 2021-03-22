@@ -20,7 +20,11 @@
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!--thymeleaf模版引擎-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
