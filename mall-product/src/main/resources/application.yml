@@ -15,11 +15,11 @@ spring:
   thymeleaf:
     cache: false
   #我们应该以什么样的路径来访问静态资源
-  mvc:
-    static-path-pattern: /static/**
-  #告诉Spring Boot应该在何处查找静态资源文件
-  resources:
-    static-locations: classpath:/static/
+#  mvc:
+#    static-path-pattern: /static/**
+#  #告诉Spring Boot应该在何处查找静态资源文件
+#  resources:
+#    static-locations: classpath:/static/
 
 
 mybatis-plus:

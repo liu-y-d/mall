@@ -9,6 +9,7 @@ import com.lyd.mall.product.dao.CategoryDao;
 import com.lyd.mall.product.entity.CategoryEntity;
 import com.lyd.mall.product.service.CategoryBrandRelationService;
 import com.lyd.mall.product.service.CategoryService;
+import com.lyd.mall.product.vo.CateLog2Vo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,6 +91,37 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     public List<CategoryEntity> getLevel1Categorys() {
         List<CategoryEntity> categoryEntities = this.baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
         return categoryEntities;
+    }
+
+    @Override
+    public Map<String, List<CateLog2Vo>> getCatalogJson() {
+        // 查出所有1级分类
+        List<CategoryEntity> level1Categorys = getLevel1Categorys();
+        Map<String, List<CateLog2Vo>> listMap = level1Categorys.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+            // 每一个一级分类
+            List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+            List<CateLog2Vo> cateLog2Vos = null;
+
+            if (categoryEntities != null) {
+                cateLog2Vos = categoryEntities.stream().map(l2 -> {
+                    CateLog2Vo cateLog2Vo = new CateLog2Vo(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
+                    // 找三级分类
+                    List<CategoryEntity> entities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", l2.getCatId()));
+                    if (entities != null){
+                        List<CateLog2Vo.Catalog3Vo> collect = entities.stream().map(l3 -> {
+                            CateLog2Vo.Catalog3Vo catalog3Vo = new CateLog2Vo.Catalog3Vo(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
+                            return catalog3Vo;
+                        }).collect(Collectors.toList());
+                        cateLog2Vo.setCatalog3List(collect);
+                    }
+                    return cateLog2Vo;
+                }).collect(Collectors.toList());
+
+            }
+
+            return cateLog2Vos;
+        }));
+        return listMap;
     }
 
     /**
