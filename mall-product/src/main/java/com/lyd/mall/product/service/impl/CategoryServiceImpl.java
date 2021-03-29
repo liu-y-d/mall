@@ -95,18 +95,24 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Override
     public Map<String, List<CateLog2Vo>> getCatalogJson() {
+
+        /**
+         * 1.将多次查询数据库改为查询一次
+         */
+        List<CategoryEntity> selectList = baseMapper.selectList(null);
+
         // 查出所有1级分类
-        List<CategoryEntity> level1Categorys = getLevel1Categorys();
+        List<CategoryEntity> level1Categorys = getParent_cid(selectList,0L);
         Map<String, List<CateLog2Vo>> listMap = level1Categorys.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
             // 每一个一级分类
-            List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+            List<CategoryEntity> categoryEntities = getParent_cid(selectList,v.getCatId());
             List<CateLog2Vo> cateLog2Vos = null;
 
             if (categoryEntities != null) {
                 cateLog2Vos = categoryEntities.stream().map(l2 -> {
                     CateLog2Vo cateLog2Vo = new CateLog2Vo(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
                     // 找三级分类
-                    List<CategoryEntity> entities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", l2.getCatId()));
+                    List<CategoryEntity> entities = getParent_cid(selectList,l2.getCatId());
                     if (entities != null){
                         List<CateLog2Vo.Catalog3Vo> collect = entities.stream().map(l3 -> {
                             CateLog2Vo.Catalog3Vo catalog3Vo = new CateLog2Vo.Catalog3Vo(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
@@ -122,6 +128,13 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             return cateLog2Vos;
         }));
         return listMap;
+    }
+
+    private List<CategoryEntity> getParent_cid(List<CategoryEntity> selectList,Long parentCid) {
+        List<CategoryEntity> collect = selectList.stream().filter(item -> {
+            return item.getParentCid().equals(parentCid);
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     /**
