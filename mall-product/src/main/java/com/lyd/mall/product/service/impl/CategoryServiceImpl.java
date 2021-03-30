@@ -1,5 +1,7 @@
 package com.lyd.mall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -10,7 +12,9 @@ import com.lyd.mall.product.entity.CategoryEntity;
 import com.lyd.mall.product.service.CategoryBrandRelationService;
 import com.lyd.mall.product.service.CategoryService;
 import com.lyd.mall.product.vo.CateLog2Vo;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +27,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     CategoryBrandRelationService categoryBrandRelationService;
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -92,9 +99,24 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<CategoryEntity> categoryEntities = this.baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
         return categoryEntities;
     }
-
     @Override
     public Map<String, List<CateLog2Vo>> getCatalogJson() {
+        // 加入缓存
+        String catalogJson = stringRedisTemplate.opsForValue().get("catalogJson");
+        if (StringUtils.isEmpty(catalogJson)){
+            // 缓存中没有
+            Map<String, List<CateLog2Vo>> catalogJsonFromDb = getCatalogJsonFromDb();
+            // 将查到的数据放到缓存,将对象转为json
+            String s = JSON.toJSONString(catalogJsonFromDb);
+            stringRedisTemplate.opsForValue().set("catalogJson",s);
+            return catalogJsonFromDb;
+        }
+        // 转为对象
+        Map<String, List<CateLog2Vo>> result = JSON.parseObject(catalogJson,new TypeReference<Map<String, List<CateLog2Vo>>>(){});
+        return result;
+    }
+    // 从数据库查询并封装分类数据
+    public Map<String, List<CateLog2Vo>> getCatalogJsonFromDb() {
 
         /**
          * 1.将多次查询数据库改为查询一次
