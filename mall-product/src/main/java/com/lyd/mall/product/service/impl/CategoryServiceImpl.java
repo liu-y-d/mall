@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -101,14 +102,17 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
     @Override
     public Map<String, List<CateLog2Vo>> getCatalogJson() {
+        /**
+         * 1.空结果缓存，解决缓存穿透问题
+         * 2.设置过期时间（加随机值）：解决缓存雪崩
+         * 3.加锁，解决缓存击穿问题
+         */
         // 加入缓存
         String catalogJson = stringRedisTemplate.opsForValue().get("catalogJson");
         if (StringUtils.isEmpty(catalogJson)){
             // 缓存中没有
             Map<String, List<CateLog2Vo>> catalogJsonFromDb = getCatalogJsonFromDb();
-            // 将查到的数据放到缓存,将对象转为json
-            String s = JSON.toJSONString(catalogJsonFromDb);
-            stringRedisTemplate.opsForValue().set("catalogJson",s);
+
             return catalogJsonFromDb;
         }
         // 转为对象
@@ -117,39 +121,53 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
     // 从数据库查询并封装分类数据
     public Map<String, List<CateLog2Vo>> getCatalogJsonFromDb() {
-
-        /**
-         * 1.将多次查询数据库改为查询一次
-         */
-        List<CategoryEntity> selectList = baseMapper.selectList(null);
-
-        // 查出所有1级分类
-        List<CategoryEntity> level1Categorys = getParent_cid(selectList,0L);
-        Map<String, List<CateLog2Vo>> listMap = level1Categorys.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
-            // 每一个一级分类
-            List<CategoryEntity> categoryEntities = getParent_cid(selectList,v.getCatId());
-            List<CateLog2Vo> cateLog2Vos = null;
-
-            if (categoryEntities != null) {
-                cateLog2Vos = categoryEntities.stream().map(l2 -> {
-                    CateLog2Vo cateLog2Vo = new CateLog2Vo(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
-                    // 找三级分类
-                    List<CategoryEntity> entities = getParent_cid(selectList,l2.getCatId());
-                    if (entities != null){
-                        List<CateLog2Vo.Catalog3Vo> collect = entities.stream().map(l3 -> {
-                            CateLog2Vo.Catalog3Vo catalog3Vo = new CateLog2Vo.Catalog3Vo(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
-                            return catalog3Vo;
-                        }).collect(Collectors.toList());
-                        cateLog2Vo.setCatalog3List(collect);
-                    }
-                    return cateLog2Vo;
-                }).collect(Collectors.toList());
-
+        // 本地锁，锁当前进程，在分布式情况下必须使用分布式锁
+        synchronized (this) {
+            // 得到锁以后再去缓存中确定一次
+            String catalogJson = stringRedisTemplate.opsForValue().get("catalogJson");
+            if (StringUtils.isNotEmpty(catalogJson)){
+                // 转为对象
+                Map<String, List<CateLog2Vo>> result = JSON.parseObject(catalogJson,new TypeReference<Map<String, List<CateLog2Vo>>>(){});
+                return result;
             }
+            /**
+             * 1.将多次查询数据库改为查询一次
+             */
+            List<CategoryEntity> selectList = baseMapper.selectList(null);
 
-            return cateLog2Vos;
-        }));
-        return listMap;
+            // 查出所有1级分类
+            List<CategoryEntity> level1Categorys = getParent_cid(selectList,0L);
+            Map<String, List<CateLog2Vo>> listMap = level1Categorys.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+                // 每一个一级分类
+                List<CategoryEntity> categoryEntities = getParent_cid(selectList,v.getCatId());
+                List<CateLog2Vo> cateLog2Vos = null;
+
+                if (categoryEntities != null) {
+                    cateLog2Vos = categoryEntities.stream().map(l2 -> {
+                        CateLog2Vo cateLog2Vo = new CateLog2Vo(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
+                        // 找三级分类
+                        List<CategoryEntity> entities = getParent_cid(selectList,l2.getCatId());
+                        if (entities != null){
+                            List<CateLog2Vo.Catalog3Vo> collect = entities.stream().map(l3 -> {
+                                CateLog2Vo.Catalog3Vo catalog3Vo = new CateLog2Vo.Catalog3Vo(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
+                                return catalog3Vo;
+                            }).collect(Collectors.toList());
+                            cateLog2Vo.setCatalog3List(collect);
+                        }
+                        return cateLog2Vo;
+                    }).collect(Collectors.toList());
+
+                }
+
+                return cateLog2Vos;
+            }));
+
+            // 将查到的数据放到缓存,将对象转为json
+            String s = JSON.toJSONString(listMap);
+            stringRedisTemplate.opsForValue().set("catalogJson",s,1, TimeUnit.DAYS);
+            return listMap;
+        }
+
     }
 
     private List<CategoryEntity> getParent_cid(List<CategoryEntity> selectList,Long parentCid) {
