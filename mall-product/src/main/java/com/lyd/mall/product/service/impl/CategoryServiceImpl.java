@@ -13,6 +13,8 @@ import com.lyd.mall.product.service.CategoryBrandRelationService;
 import com.lyd.mall.product.service.CategoryService;
 import com.lyd.mall.product.vo.CateLog2Vo;
 import org.apache.commons.lang.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -32,6 +34,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    RedissonClient redissonClient;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -92,8 +97,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     @Transactional
     @Override
     public void updateCascade(CategoryEntity category) {
-       this.updateById(category);
-       categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+        this.updateById(category);
+        categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
+
+        // 同时修改缓存中的数据
+        // 删除缓存中的数据，等待下次主动查询进行更新
     }
 
     @Override
@@ -130,6 +138,31 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     }
 
+    /**
+     * @Description: 缓存里面的数据如何和数据库保持一致
+     * 缓存数据一致性问题
+     * 1.双写模式：同时修改缓存中的数据
+     * 2.失效模式：删除缓存中的数据，等待下次主动查询进行更新
+     * @Param: []
+     * @return: java.util.Map<java.lang.String,java.util.List<com.lyd.mall.product.vo.CateLog2Vo>>
+     * @Author: Liuyunda
+     * @Date: 2021/4/1
+     */
+    public Map<String, List<CateLog2Vo>> getCatalogJsonFromDbWithRedissonLock() {
+
+        RLock catalogJsonLock = redissonClient.getLock("catalogJsonLock");
+        catalogJsonLock.lock();
+        Map<String, List<CateLog2Vo>> dataFromDb;
+
+        // 加锁成功...执行业务
+        try {
+            dataFromDb = getDataFromDb();
+        }finally {
+            catalogJsonLock.unlock();
+        }
+        return dataFromDb;
+
+    }
 
     public Map<String, List<CateLog2Vo>> getCatalogJsonFromDbWithRedisLock() {
         // 1.占分布式锁。去redis占坑
