@@ -12,6 +12,16 @@ spring:
         server-addr: 127.0.0.1:8848
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  thymeleaf:
+    cache: false
+  redis:
+    host: 192.168.56.10
+    port: 6379
+#  mvc:
+#    static-path-pattern: /static/**
+#  #告诉Spring Boot应该在何处查找静态资源文件
+#  resources:
+#    static-locations: classpath:/static/
 
 
 mybatis-plus:
@@ -32,4 +42,3 @@ logging:
 ribbon:
   ConnectTimeout=5000
   ReadTimeout=5000
-

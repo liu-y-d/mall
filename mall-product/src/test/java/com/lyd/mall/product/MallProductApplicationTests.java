@@ -1,20 +1,45 @@
 package com.lyd.mall.product;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.lyd.mall.product.entity.BrandEntity;
 import com.lyd.mall.product.service.BrandService;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest
 class MallProductApplicationTests {
 
     @Autowired
     BrandService brandService;
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    RedissonClient redissonClient;
+    @Test
+    public void testRedisson() {
+        System.out.println(redissonClient);
+
+    }
+
+    @Test
+    public void testRedis() {
+        ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+        // 保存
+        ops.set("hello","world_"+ UUID.randomUUID().toString());
+        // 查询
+        String hello = ops.get("hello");
+        System.out.println("之前保存的数据："+hello);
+
+    }
     @Test
     void contextLoads() {
         BrandEntity brandEntity = new BrandEntity();
