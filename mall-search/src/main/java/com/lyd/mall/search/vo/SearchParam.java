@@ -1,5 +1,7 @@
 package com.lyd.mall.search.vo;
 
+import lombok.Data;
+
 import java.util.List;
 
 /**
@@ -8,6 +10,7 @@ import java.util.List;
  * @Email man021436@163.com
  * @Description: 封装页面所有可能穿过来的查询条件
  */
+@Data
 public class SearchParam {
 
     /**
@@ -28,7 +31,7 @@ public class SearchParam {
     /**
      * 是否有货
      */
-    private Integer hasStock;
+    private Integer hasStock = 1;
 
     /**
      * 价格区间
@@ -44,11 +47,11 @@ public class SearchParam {
     /**
      * 按照属性筛选
      */
-    private List<String> atts;
+    private List<String> attrs;
 
     /**
      * 页码
      */
-    private Integer pageNum;
+    private Integer pageNum = 1;
 
 }
