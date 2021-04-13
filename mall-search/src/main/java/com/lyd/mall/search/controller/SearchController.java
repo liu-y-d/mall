@@ -2,6 +2,7 @@ package com.lyd.mall.search.controller;
 
 import com.lyd.mall.search.service.MallSearchService;
 import com.lyd.mall.search.vo.SearchParam;
+import com.lyd.mall.search.vo.SearchResult;
 import org.elasticsearch.action.search.SearchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,7 +23,7 @@ public class SearchController {
 
     @GetMapping("/list.html")
     public String listPage(SearchParam searchParam, Model model){
-        SearchResponse result = mallSearchService.search(searchParam);
+        SearchResult result = mallSearchService.search(searchParam);
         model.addAttribute("result",result);
         return "list";
     }

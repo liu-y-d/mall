@@ -1,7 +1,7 @@
 package com.lyd.mall.search.service;
 
 import com.lyd.mall.search.vo.SearchParam;
-import org.elasticsearch.action.search.SearchResponse;
+import com.lyd.mall.search.vo.SearchResult;
 
 /**
  * @Author Liuyunda
@@ -10,5 +10,5 @@ import org.elasticsearch.action.search.SearchResponse;
  * @Description: TODO
  */
 public interface MallSearchService {
-    SearchResponse search(SearchParam searchParam);
+    SearchResult search(SearchParam searchParam);
 }
