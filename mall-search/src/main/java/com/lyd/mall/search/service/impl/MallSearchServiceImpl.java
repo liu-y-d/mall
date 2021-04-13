@@ -116,7 +116,9 @@ public class MallSearchServiceImpl implements MallSearchService {
 
 
         // filter 库存
-        boolQuery.filter(QueryBuilders.termQuery("hasStock", searchParam.getHasStock() == 1));
+        if(searchParam.getHasStock() !=null){
+            boolQuery.filter(QueryBuilders.termQuery("hasStock", searchParam.getHasStock() == 1));
+        }
 
         // filter 价格区间
         if (StringUtils.isNotEmpty(searchParam.getSkuPrice())) {
@@ -272,6 +274,11 @@ public class MallSearchServiceImpl implements MallSearchService {
         result.setTotal(total);
         int totalPages = (int) (total % EsConstant.PRODUCT_PAGE_SIZE == 0 ? total / EsConstant.PRODUCT_PAGE_SIZE : total / EsConstant.PRODUCT_PAGE_SIZE + 1);
         result.setTotalPages(totalPages);
+        List<Integer> pageNavs = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageNavs.add(i);
+        }
+        result.setPageNavs(pageNavs);
         return result;
     }
 }
