@@ -333,6 +333,13 @@ public class MallSearchServiceImpl implements MallSearchService {
         return result;
     }
 
+    /**
+     * @Description: 替换URl中的参数
+     * @Param: [searchParam, value, key]
+     * @return: java.lang.String
+     * @Author: Liuyunda
+     * @Date: 2021/4/14
+     */
     private String replaceQueryString(SearchParam searchParam, String value,String key) {
         String encode = null;
         try {
