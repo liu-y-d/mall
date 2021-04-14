@@ -1,10 +1,15 @@
 package com.lyd.mall.search.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.lyd.common.to.es.SkuEsModel;
+import com.lyd.common.utils.R;
 import com.lyd.mall.search.config.MallElasticsearchConfig;
 import com.lyd.mall.search.constant.EsConstant;
+import com.lyd.mall.search.feign.ProductFeignService;
 import com.lyd.mall.search.service.MallSearchService;
+import com.lyd.mall.search.vo.AttrResponseVo;
+import com.lyd.mall.search.vo.BrandVo;
 import com.lyd.mall.search.vo.SearchParam;
 import com.lyd.mall.search.vo.SearchResult;
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +55,9 @@ public class MallSearchServiceImpl implements MallSearchService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Autowired
+    ProductFeignService productFeignService;
 
     /**
      * @Description: 检索的所有参数，返回所有的结果
@@ -279,6 +289,59 @@ public class MallSearchServiceImpl implements MallSearchService {
             pageNavs.add(i);
         }
         result.setPageNavs(pageNavs);
+
+        // 构建面包屑导航
+        if (searchParam.getAttrs()!=null&&searchParam.getAttrs().size()>0){
+
+            List<SearchResult.NavVo> navVos = searchParam.getAttrs().stream().map(attr -> {
+                SearchResult.NavVo navVo = new SearchResult.NavVo();
+                String[] s = attr.split("_");
+                navVo.setNavValue(s[1]);
+                R attrInfo = productFeignService.getAttrInfo(Long.parseLong(s[0]));
+                result.getAttrIds().add(Long.parseLong(s[0]));
+                if (((Integer)attrInfo.get("code")) == 0){
+                    AttrResponseVo data = attrInfo.getData("attr", new TypeReference<AttrResponseVo>() {});
+                    navVo.setNavName(data.getAttrName());
+                }else {
+                    navVo.setNavName(s[0]);
+                }
+                // 取消了面包屑，拿到所有的查询条件，去掉当前
+                String replace = replaceQueryString(searchParam, attr,"attrs");
+                navVo.setLink("http://search.mall.com/list.html?"+replace);
+                return navVo;
+            }).collect(Collectors.toList());
+            result.setNavs(navVos);
+        }
+        if (searchParam.getBrandId()!=null&&searchParam.getBrandId().size()>0){
+            List<SearchResult.NavVo> navs = result.getNavs();
+            SearchResult.NavVo navVo = new SearchResult.NavVo();
+            navVo.setNavName("品牌");
+            R r = productFeignService.brandInfo(searchParam.getBrandId());
+            if (((Integer)r.get("code")==0)){
+                List<BrandVo> brand = r.getData("brand", new TypeReference<List<BrandVo>>() {});
+                StringBuffer buffer = new StringBuffer();
+                String replace = "";
+                for (BrandVo brandVo : brand) {
+                    buffer.append(brandVo.getName()+";");
+                    replace = replaceQueryString(searchParam, brandVo.getBrandId()+"","brandId");
+                }
+                navVo.setNavValue(buffer.toString());
+                navVo.setLink("http://search.mall.com/list.html?"+replace);
+            }
+            navs.add(navVo);
+        }
         return result;
+    }
+
+    private String replaceQueryString(SearchParam searchParam, String value,String key) {
+        String encode = null;
+        try {
+            encode = URLEncoder.encode(value, "UTF-8");
+            encode = encode.replace("+","%20");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        String queryString = searchParam.get_queryString();
+        return queryString.replace("&"+key+"=" + encode, "");
     }
 }
