@@ -762,6 +762,10 @@
                 <a href="/static/search/#">游戏手机</a>
             </div>
         </div>
+        <!--遍历面包屑-->
+        <div class="JD_ipone_one c">
+            <a th:each="nav:${result.navs}" th:href="${nav.link}" ><span th:text="${nav.navName}" ></span>:<span th:text="${nav.navValue}"></span> x</a>
+        </div>
         <i><img src="/static/search/image/right-@1x.png" alt=""></i>
     </div>
 </div>
@@ -775,9 +779,9 @@
                 <h3><b>手机</b><em>商品筛选</em></h3>
                 <div class="st-ext">共&nbsp;<span>10135</span>个商品 </div>
             </div>
-            <div class="JD_nav_logo">
+            <div class="JD_nav_logo" th:with="brandId = ${param.brandId}">
                 <!--品牌-->
-                <div class="JD_nav_wrap">
+                <div  th:if="${#strings.isEmpty(brandId)}" class="JD_nav_wrap" >
                     <div class="sl_key">
                         <span><b>品牌：</b></span>
                     </div>
@@ -820,7 +824,7 @@
                     </div>
                 </div>
                 <!--其他的所有属性-->
-                <div class="JD_pre" th:each="attr:${result.attrs}">
+                <div class="JD_pre" th:each="attr:${result.attrs}" th:if="${!#lists.contains(result.attrIds,attr.attrId)}">
                     <div class="sl_key">
                         <span th:text="${attr.attrName}">屏幕尺寸：</span>
                     </div>
@@ -1953,7 +1957,7 @@
     function searchProduct(name,value) {
         // 原来的页面
         var href = location.href+"";
-        location.href = replacecParamVal(href,name,value);
+        location.href = replacecParamVal(href,name,value,true);
     }
     function searchByKeyword() {
 
@@ -1970,12 +1974,24 @@
         }
         return false;
     });
-    function replacecParamVal(url,paramName,replaceVal) {
+    function replacecParamVal(url,paramName,replaceVal,forceAdd) {
         var oUrl = url.toString();
+        forceAdd = !paramName=='keyword';
         if (oUrl.indexOf(paramName)!=-1){
-            var re = eval('/('+paramName+'=)([^&]*)/gi');
-            var nUrl = oUrl.replace(re,paramName+'='+replaceVal);
-            return nUrl;
+            if (forceAdd){
+                var nUrl = "";
+                if (oUrl.indexOf("?")!=-1){
+                    nUrl = oUrl + "&"+paramName+"="+replaceVal;
+                }else {
+                    nUrl = oUrl + "?"+paramName+"="+replaceVal;
+                }
+                return nUrl;
+            }else {
+
+                var re = eval('/('+paramName+'=)([^&]*)/gi');
+                var nUrl = oUrl.replace(re,paramName+'='+replaceVal);
+                return nUrl;
+            }
         }else {
             var nUrl = "";
             if (oUrl.indexOf("?")!=-1){

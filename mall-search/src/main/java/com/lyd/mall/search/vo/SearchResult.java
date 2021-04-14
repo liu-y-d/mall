@@ -3,6 +3,7 @@ package com.lyd.mall.search.vo;
 import com.lyd.common.to.es.SkuEsModel;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,6 +50,19 @@ public class SearchResult {
      * 当前查询的结果，所有涉及的分类
      */
     private List<CatalogVo> catalogs;
+
+    /**
+     * 面包屑导航数据
+     */
+    private List<NavVo> navs = new ArrayList<>();
+    private List<Long> attrIds = new ArrayList<>();
+
+    @Data
+    public static class NavVo{
+        private String navName;
+        private String navValue;
+        private String link;
+    }
 
     @Data
     public static class BrandVo{
