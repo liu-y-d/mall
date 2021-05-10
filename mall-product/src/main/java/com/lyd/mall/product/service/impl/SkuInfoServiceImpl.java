@@ -8,6 +8,7 @@ import com.lyd.common.utils.Query;
 import com.lyd.mall.product.dao.SkuInfoDao;
 import com.lyd.mall.product.entity.SkuInfoEntity;
 import com.lyd.mall.product.service.SkuInfoService;
+import com.lyd.mall.product.vo.SkuItemVo;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -85,6 +86,23 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         queryWrapper.eq("spu_id",spuId);
         List<SkuInfoEntity> list = this.list(queryWrapper);
         return list;
+    }
+
+    @Override
+    public SkuItemVo item(Long skuId) {
+        SkuItemVo skuItemVo = new SkuItemVo();
+        // sku基本信息 pms_sku_info
+        // todo skuItemVo.setInfo()
+        // sku的图片信息 pms_sku_images
+        // todo skuItemVo.setImages()
+        // spu的销售属性组合
+        // todo skuItemVo.setSaleAttr()
+        // 获取spu的介绍
+        // todo skuItemVo.setDesc()
+        // 获取spu的规格参数信息
+        // todo skuItemVo.setGroupAttrs()
+
+        return null;
     }
 
 }
