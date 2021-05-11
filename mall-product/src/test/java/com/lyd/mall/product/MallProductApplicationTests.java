@@ -1,8 +1,12 @@
 package com.lyd.mall.product;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.lyd.mall.product.dao.AttrGroupDao;
+import com.lyd.mall.product.dao.SkuSaleAttrValueDao;
 import com.lyd.mall.product.entity.BrandEntity;
 import com.lyd.mall.product.service.BrandService;
+import com.lyd.mall.product.vo.SkuItemSaleAttrVo;
+import com.lyd.mall.product.vo.SpuItemAttrGroupVo;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +28,29 @@ class MallProductApplicationTests {
 
     @Autowired
     RedissonClient redissonClient;
+
+
+    @Autowired
+    AttrGroupDao attrGroupDao;
+
+    @Autowired
+    SkuSaleAttrValueDao skuSaleAttrValueDao;
+
+    @Test
+    public void test111() {
+        List<SkuItemSaleAttrVo> saleAttrsBySpuId = skuSaleAttrValueDao.getSaleAttrsBySpuId(14L);
+        System.out.println(saleAttrsBySpuId);
+
+    }
+
+    @Test
+    public void test() {
+        List<SpuItemAttrGroupVo> attrGroupWithAttrsBySpuId = attrGroupDao.getAttrGroupWithAttrsBySpuId(14L, 225L);
+        System.out.println(attrGroupWithAttrsBySpuId);
+
+    }
+
+
     @Test
     public void testRedisson() {
         System.out.println(redissonClient);
