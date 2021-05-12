@@ -3,6 +3,8 @@ package com.lyd.mall.product.vo;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.List;
+
 /**
  * @Author Liuyunda
  * @Date 2021/5/11 22:02
@@ -14,5 +16,5 @@ import lombok.ToString;
 public class SkuItemSaleAttrVo {
     private Long attrId;
     private String attrName;
-    private String attrValues;
+    private List<AttrValueWithSkuIdVo> attrValues;
 }
