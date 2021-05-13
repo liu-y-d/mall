@@ -1,6 +1,9 @@
 package com.lyd.mall.thirdparty;
 
+import com.aliyun.dysmsapi20170525.models.SendSmsRequest;
+import com.aliyun.dysmsapi20170525.models.SendSmsResponse;
 import com.aliyun.oss.OSSClient;
+import com.aliyun.teaopenapi.models.Config;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -59,5 +62,39 @@ class MallThirdPartyApplicationTests {
         ossClient.shutdown();
 
         System.out.println("上传完成");
+    }
+
+    public void sendSms(){
+
+    }
+    /**
+     * 使用AK&SK初始化账号Client
+     * @param accessKeyId
+     * @param accessKeySecret
+     * @return Client
+     * @throws Exception
+     */
+    public static com.aliyun.dysmsapi20170525.Client createClient(String accessKeyId, String accessKeySecret) throws Exception {
+        Config config = new Config()
+                // 您的AccessKey ID
+                .setAccessKeyId(accessKeyId)
+                // 您的AccessKey Secret
+                .setAccessKeySecret(accessKeySecret);
+        // 访问的域名
+        config.endpoint = "dysmsapi.aliyuncs.com";
+        return new com.aliyun.dysmsapi20170525.Client(config);
+    }
+
+    public static void main(String[] args_) throws Exception {
+        java.util.List<String> args = java.util.Arrays.asList(args_);
+        com.aliyun.dysmsapi20170525.Client client = createClient("accessKeyId", "accessKeySecret");
+        SendSmsRequest sendSmsRequest = new SendSmsRequest()
+                .setPhoneNumbers("17648273024")
+                .setSignName("刘云达商城")
+                .setTemplateCode("1")
+                .setTemplateParam("111");
+        // 复制代码运行请自行打印 API 的返回值
+        SendSmsResponse sendSmsResponse = client.sendSms(sendSmsRequest);
+        System.out.println(sendSmsResponse.getBody());
     }
 }
