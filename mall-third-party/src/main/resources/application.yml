@@ -6,8 +6,8 @@ spring:
   application:
     name: mall-third-party
     alicloud:
-      access-key: LTAI4GCdBUWRVWTyQjxwT5hU
-      secret-key: oqCP5jnqIKvz45kSaCsn8hlvEwVSZY
+      access-key: #
+      secret-key: #
       oss:
         endpoint: oss-cn-beijing.aliyuncs.com
 server:
