@@ -3,6 +3,9 @@ package com.lyd.mall.member.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lyd.common.utils.PageUtils;
 import com.lyd.mall.member.entity.MemberEntity;
+import com.lyd.mall.member.exception.PhoneExistException;
+import com.lyd.mall.member.exception.UsernameExistException;
+import com.lyd.mall.member.vo.MemberRegistVo;
 
 import java.util.Map;
 
@@ -16,5 +19,11 @@ import java.util.Map;
 public interface MemberService extends IService<MemberEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    void regist(MemberRegistVo vo);
+
+    void checkEmailUnique(String email);
+    void checkPhoneUnique(String phone) throws PhoneExistException;
+    void checkUsernameUnique(String username) throws UsernameExistException;
 }
 
