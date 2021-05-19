@@ -1,5 +1,7 @@
 package com.lyd.mall.member.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -14,10 +16,14 @@ import com.lyd.mall.member.exception.UsernameExistException;
 import com.lyd.mall.member.service.MemberService;
 import com.lyd.mall.member.vo.MemberLoginVo;
 import com.lyd.mall.member.vo.MemberRegistVo;
+import com.lyd.mall.member.vo.SocialUser;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -94,6 +100,29 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
             }
         }
 
+    }
+
+    @Override
+    public MemberEntity login(SocialUser vo) {
+        MemberEntity memberEntity = new MemberEntity();
+        RestTemplate restTemplate = new RestTemplate();
+        HashMap<String, String> param = new HashMap<>();
+        param.put("access_token", vo.getAccess_token());
+        String forObject = restTemplate.getForObject("https://gitee.com/api/v5/user" + "?access_token={access_token}", String.class, param);
+        if (StringUtils.isNotEmpty(forObject)){
+            JSONObject jsonObject = JSON.parseObject(forObject);
+            memberEntity.setNickname((String) jsonObject.get("name"));
+            memberEntity.setSocialUid(jsonObject.get("id").toString());
+            QueryWrapper<MemberEntity> eq = new QueryWrapper<MemberEntity>().eq("social_uid", jsonObject.get("id").toString());
+            Integer integer = baseMapper.selectCount(eq);
+            if (integer>0){
+                baseMapper.update(memberEntity,eq);
+            }else {
+                baseMapper.insert(memberEntity);
+            }
+            return memberEntity;
+        }
+        return null;
     }
 
 }

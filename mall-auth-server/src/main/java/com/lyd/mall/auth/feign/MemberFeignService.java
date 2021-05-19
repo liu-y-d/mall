@@ -1,6 +1,7 @@
 package com.lyd.mall.auth.feign;
 
 import com.lyd.common.utils.R;
+import com.lyd.mall.auth.vo.SocialUser;
 import com.lyd.mall.auth.vo.UserLoginVo;
 import com.lyd.mall.auth.vo.UserRegistVo;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -20,4 +21,7 @@ public interface MemberFeignService {
 
     @PostMapping("/member/member/login")
     R login(@RequestBody UserLoginVo vo);
+
+    @PostMapping("/member/member/oauth/login")
+    R oauthLogin(@RequestBody SocialUser vo);
 }

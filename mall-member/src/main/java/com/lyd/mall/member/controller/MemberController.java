@@ -10,6 +10,7 @@ import com.lyd.mall.member.feign.CouponFeignService;
 import com.lyd.mall.member.service.MemberService;
 import com.lyd.mall.member.vo.MemberLoginVo;
 import com.lyd.mall.member.vo.MemberRegistVo;
+import com.lyd.mall.member.vo.SocialUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +53,16 @@ public class MemberController {
         MemberEntity memberEntity = memberService.login(vo);
         if (memberEntity!=null){
             return R.ok();
+        }else {
+            return R.error(BizCodeEnume.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(),BizCodeEnume.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMessage());
+        }
+    }
+
+    @PostMapping("/oauth/login")
+    public R oauthLogin(@RequestBody SocialUser vo){
+        MemberEntity memberEntity = memberService.login(vo);
+        if (memberEntity!=null){
+            return R.ok().setData(memberEntity);
         }else {
             return R.error(BizCodeEnume.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(),BizCodeEnume.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMessage());
         }

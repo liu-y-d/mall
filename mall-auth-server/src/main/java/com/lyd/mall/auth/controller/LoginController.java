@@ -137,4 +137,5 @@ public class LoginController {
             return "redirect:http://auth.mall.com/login.html";
         }
     }
+
 }
