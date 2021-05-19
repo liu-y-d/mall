@@ -8,6 +8,7 @@ import com.lyd.mall.member.exception.PhoneExistException;
 import com.lyd.mall.member.exception.UsernameExistException;
 import com.lyd.mall.member.feign.CouponFeignService;
 import com.lyd.mall.member.service.MemberService;
+import com.lyd.mall.member.vo.MemberLoginVo;
 import com.lyd.mall.member.vo.MemberRegistVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +47,15 @@ public class MemberController {
         return R.ok();
     }
 
+    @PostMapping("/login")
+    public R login(@RequestBody MemberLoginVo vo){
+        MemberEntity memberEntity = memberService.login(vo);
+        if (memberEntity!=null){
+            return R.ok();
+        }else {
+            return R.error(BizCodeEnume.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(),BizCodeEnume.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMessage());
+        }
+    }
 
     /**
      * @Description: 获取会员的优惠券信息

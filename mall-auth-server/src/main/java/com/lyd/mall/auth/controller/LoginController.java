@@ -4,7 +4,8 @@ import com.alibaba.fastjson.TypeReference;
 import com.lyd.common.constant.AuthServerConstant;
 import com.lyd.common.exception.BizCodeEnume;
 import com.lyd.common.utils.R;
-import com.lyd.mall.auth.co.UserRegistVo;
+import com.lyd.mall.auth.vo.UserLoginVo;
+import com.lyd.mall.auth.vo.UserRegistVo;
 import com.lyd.mall.auth.feign.MemberFeignService;
 import com.lyd.mall.auth.feign.ThirdPartFignService;
 import org.apache.commons.lang.StringUtils;
@@ -103,7 +104,7 @@ public class LoginController {
                     return "redirect:http://auth.mall.com/login.html";
                 } else {
                     HashMap<String, String> errors = new HashMap<>();
-                    errors.put("msg",regist.getData(new TypeReference<String>(){}));
+                    errors.put("msg",regist.getData("msg",new TypeReference<String>(){}));
                     redirectAttributes.addFlashAttribute("errors",errors);
                     return "redirect:http://auth.mal.com/reg.html";
                 }
@@ -120,6 +121,20 @@ public class LoginController {
             // 校验出错转发到注册页
             redirectAttributes.addFlashAttribute("errors",collect);
             return "redirect:http://auth.mal.com/reg.html";
+        }
+    }
+
+    @PostMapping("/login")
+    public String login(UserLoginVo vo,RedirectAttributes redirectAttributes){
+        // 远程登录
+        R login = memberFeignService.login(vo);
+        if ((Integer)login.get("code") == 0){
+            return "redirect:http://mall.com";
+        }else {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("msg",login.getData("msg",new TypeReference<String>(){}));
+            redirectAttributes.addFlashAttribute("errors",errors);
+            return "redirect:http://auth.mall.com/login.html";
         }
     }
 }

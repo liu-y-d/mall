@@ -1,4 +1,4 @@
-package com.lyd.mall.auth.co;
+package com.lyd.mall.auth.vo;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
