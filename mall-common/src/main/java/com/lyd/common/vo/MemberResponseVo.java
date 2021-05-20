@@ -1,7 +1,8 @@
-package com.lyd.mall.auth.vo;
+package com.lyd.common.vo;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Date;
  * @Description: TODO
  */
 @Data
-public class MemberResponseVo {
+public class MemberResponseVo implements Serializable {
     /**
      * id
      */

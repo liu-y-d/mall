@@ -18,6 +18,11 @@
         <spring-cloud.version>Hoxton.SR9</spring-cloud.version>
     </properties>
     <dependencies>
+        <!--整合springsession完成session共享-->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
