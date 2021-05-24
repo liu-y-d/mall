@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.lyd.common.constant.AuthServerConstant;
 import com.lyd.common.exception.BizCodeEnume;
 import com.lyd.common.utils.R;
+import com.lyd.common.vo.MemberResponseVo;
 import com.lyd.mall.auth.vo.UserLoginVo;
 import com.lyd.mall.auth.vo.UserRegistVo;
 import com.lyd.mall.auth.feign.MemberFeignService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -125,10 +127,12 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String login(UserLoginVo vo,RedirectAttributes redirectAttributes){
+    public String login(UserLoginVo vo, RedirectAttributes redirectAttributes, HttpSession session){
         // 远程登录
         R login = memberFeignService.login(vo);
         if ((Integer)login.get("code") == 0){
+            MemberResponseVo data = login.getData("data", new TypeReference<MemberResponseVo>() {});
+            session.setAttribute(AuthServerConstant.LOGIN_USER,data);
             return "redirect:http://mall.com";
         }else {
             Map<String, String> errors = new HashMap<>();
@@ -137,5 +141,19 @@ public class LoginController {
             return "redirect:http://auth.mall.com/login.html";
         }
     }
+
+
+    @GetMapping("/login.html")
+    public String loginPage(HttpSession session){
+        Object attribute = session.getAttribute(AuthServerConstant.LOGIN_USER);
+        if (attribute==null){
+            return "login";
+        }else {
+            return "redirect:http://mall.com";
+        }
+
+
+    }
+
 
 }

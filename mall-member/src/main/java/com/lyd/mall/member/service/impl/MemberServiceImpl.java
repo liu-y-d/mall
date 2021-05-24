@@ -56,7 +56,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         memberEntity.setUsername(vo.getUserName());
         // 密码加密存储
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-
+        memberEntity.setNickname(vo.getUserName());
         memberEntity.setPassword(bCryptPasswordEncoder.encode(vo.getPassword()));
         baseMapper.insert(memberEntity);
     }
