@@ -11,5 +11,21 @@ import java.util.concurrent.ExecutionException;
  * @Description: TODO
  */
 public interface CartService {
+    /**
+     * @Description: 添加商品到购物车
+     * @Param: [skuId, num]
+     * @return: com.lyd.mallcart.vo.CartItem
+     * @Author: Liuyunda
+     * @Date: 2021/5/26
+     */
     CartItem addToCart(Long skuId, Integer num) throws ExecutionException, InterruptedException;
+
+    /**
+     * @Description: 获取购物车中的某个购物项
+     * @Param: [skuId]
+     * @return: com.lyd.mallcart.vo.CartItem
+     * @Author: Liuyunda
+     * @Date: 2021/5/26
+     */
+    CartItem getCartItem(Long skuId);
 }
