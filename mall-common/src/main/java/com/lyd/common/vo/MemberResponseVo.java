@@ -1,5 +1,6 @@
 package com.lyd.common.vo;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -16,6 +17,7 @@ public class MemberResponseVo implements Serializable {
     /**
      * id
      */
+    @TableId
     private Long id;
     /**
      * 会员等级id
