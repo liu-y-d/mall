@@ -68,7 +68,7 @@
                 <a style="width: 100px" th:if="${session.loginUser!=null}">[[${session.loginUser.nickname}]]</a>
             </li>
             <li>
-                <a href="/static/search/#">免费注册</a>
+                <a href="http://auth.mall.com/reg.html" th:if="${session.loginUser==null}">免费注册</a>
             </li>
             <span>|</span>
             <li>

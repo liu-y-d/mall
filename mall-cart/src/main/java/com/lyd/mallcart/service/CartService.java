@@ -1,5 +1,6 @@
 package com.lyd.mallcart.service;
 
+import com.lyd.mallcart.vo.Cart;
 import com.lyd.mallcart.vo.CartItem;
 
 import java.util.concurrent.ExecutionException;
@@ -28,4 +29,42 @@ public interface CartService {
      * @Date: 2021/5/26
      */
     CartItem getCartItem(Long skuId);
+
+    /**
+     * @Description: 获得整个购物车
+     * @Param: []
+     * @return: com.lyd.mallcart.vo.Cart
+     * @Author: Liuyunda
+     * @Date: 2021/5/27
+     */
+    Cart getCart() throws ExecutionException, InterruptedException;
+
+    /**
+     * @Description: 清空购物车
+     * @Param: [cartKey]
+     * @return: void
+     * @Author: Liuyunda
+     * @Date: 2021/5/27
+     */
+    void clearCart(String cartKey);
+
+    /**
+     * @Description: 切换购物项选中状态
+     * @Param: [skuId, check]
+     * @return: void
+     * @Author: Liuyunda
+     * @Date: 2021/5/27
+     */
+    void checkItem(Long skuId, Integer check);
+
+    /**
+     * @Description: 改变数量
+     * @Param: [skuId, num]
+     * @return: void
+     * @Author: Liuyunda
+     * @Date: 2021/5/27
+     */
+    void countItem(Long skuId, Integer num);
+
+    void deleteItem(Long skuId);
 }

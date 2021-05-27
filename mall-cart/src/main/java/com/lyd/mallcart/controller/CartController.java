@@ -1,9 +1,8 @@
 package com.lyd.mallcart.controller;
 
-import com.lyd.mallcart.interceptor.CartInterceptor;
 import com.lyd.mallcart.service.CartService;
+import com.lyd.mallcart.vo.Cart;
 import com.lyd.mallcart.vo.CartItem;
-import com.lyd.mallcart.vo.UserInfoTo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,9 +24,9 @@ public class CartController {
     @Autowired
     CartService cartService;
     @GetMapping("/cart.html")
-    public String cartListPage(){
-        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
-        System.out.println(userInfoTo.toString());
+    public String cartListPage(Model model) throws ExecutionException, InterruptedException {
+        Cart cart = cartService.getCart();
+        model.addAttribute("cart",cart);
         return "cartList";
     }
 
@@ -44,5 +43,23 @@ public class CartController {
         CartItem item = cartService.getCartItem(skuId);
         model.addAttribute("item",item);
         return "success";
+    }
+
+    @GetMapping("/checkItem")
+    public String checkItem(@RequestParam("skuId") Long skuId,@RequestParam("check") Integer check){
+        cartService.checkItem(skuId,check);
+        return "redirect:http://cart.mall.com/cart.html";
+    }
+
+    @GetMapping("/countItem")
+    public String countItem(@RequestParam("skuId") Long skuId,@RequestParam("num") Integer num){
+        cartService.countItem(skuId,num);
+        return "redirect:http://cart.mall.com/cart.html";
+    }
+
+    @GetMapping("/deleteItem")
+    public String deleteItem(@RequestParam("skuId") Long skuId){
+        cartService.deleteItem(skuId);
+        return "redirect:http://cart.mall.com/cart.html";
     }
 }
