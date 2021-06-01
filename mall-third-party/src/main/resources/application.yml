@@ -17,4 +17,4 @@ spring:
         templateId: 908e94ccf08b4476ba6c876d13f084ad
         appCode: 16dd6c32315c411ab10d8061b42dfe52
 server:
-  port: 30000
+  port: 31000
