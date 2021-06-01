@@ -41,7 +41,14 @@ public class MyRabbitConfig {
      *          1.spring.rabbitmq.publisher-returns=true
      *          2.spring.rabbitmq.template.mandatory=true(只要抵达队列，以异步的方式优先回调我们这个returnConfirm)
      * 消费端确认（保证每一个消息被正确消费，此时才可以broker删除这个消息）
-     *
+     *      1.默认是自动确认的，只要消息接收到，客户端会自动确认，服务端就会移除这个消息
+     *          问题：收到很多消息，自动回复给服务器ack，只有一个消息处理成功，系统宕机了。发生消息丢失
+     *          解决：
+     *              消费者手动确认，只要没有明确告诉MQ，消息被接受，没有Ack。消息就一直是UnAcked状态，及时Consumer宕机，消息也不会丢失，会重新变为Ready，下一次有心的Consumer连接进来就发给他
+     *          问题：如何签收
+     *          解决：
+     *              签收：channel.basicAck(deliveryTag,false);
+     *              拒签：channel.basicNack(deliveryTag,false,false);
      * @Param: []
      * @return: void
      * @Author: Liuyunda

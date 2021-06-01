@@ -11,11 +11,14 @@ import com.lyd.mall.order.entity.OrderReturnReasonEntity;
 import com.lyd.mall.order.service.OrderItemService;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Map;
 
-// @RabbitListener(queues = {"hello-java-queue"})
+@RabbitListener(queues = {"hello-java-queue"})
 @Service("orderItemService")
 public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEntity> implements OrderItemService {
 
@@ -49,18 +52,41 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
      * @Date: 2021/5/31
      */
     // @RabbitListener(queues = {"hello-java-queue"})
-    // @RabbitHandler
+    @RabbitHandler
     public void receiveMessage(Message message, OrderReturnReasonEntity context, Channel channel){
         // System.out.println("接收到消息，内容："+message+",类型："+message.getClass());
         System.out.println("接收到消息，内容："+context);
         // try { TimeUnit.SECONDS.sleep(3); }catch (InterruptedException e) { e.printStackTrace(); }
         // System.out.println("消息处理完成");
+        // channel内按顺序自增的
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
+        // 签收货物,非批量模式
+        try {
+            if (deliveryTag%2==0){
+                channel.basicAck(deliveryTag,false);
+                System.out.println("签收了");
+            }else {
+                // requeue = false 丢弃，=true发回服务器，服务器重新入队
+                channel.basicNack(deliveryTag,false,false);
+                // channel.basicReject();
+                System.out.println("拒签了");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    // @RabbitHandler
-    public void receiveMessage2(String context){
+    @RabbitHandler
+    public void receiveMessage2(Message message,String context,Channel channel){
         // System.out.println("接收到消息，内容："+message+",类型："+message.getClass());
         System.out.println("接收到消息，内容："+context);
+        try {
+            long deliveryTag = message.getMessageProperties().getDeliveryTag();
+            channel.basicAck(deliveryTag,false);
+            System.out.println("签收了");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // try { TimeUnit.SECONDS.sleep(3); }catch (InterruptedException e) { e.printStackTrace(); }
         // System.out.println("消息处理完成");
     }

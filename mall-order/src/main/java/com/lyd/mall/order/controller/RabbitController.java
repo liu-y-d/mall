@@ -34,9 +34,9 @@ public class RabbitController {
                 reasonEntity.setName("qqqq-"+i);
                 reasonEntity.setStatus(1);
                 reasonEntity.setSort(1);
-                rabbitTemplate.convertAndSend("hello-java-exchange","hello.java1", reasonEntity,new CorrelationData(UUID.randomUUID().toString()));
+                rabbitTemplate.convertAndSend("hello-java-exchange","hello.java", reasonEntity,new CorrelationData(UUID.randomUUID().toString()));
             }else {
-                rabbitTemplate.convertAndSend("hello-java-exchange","hello.java1", message,new CorrelationData(UUID.randomUUID().toString()));
+                rabbitTemplate.convertAndSend("hello-java-exchange","hello.java", message,new CorrelationData(UUID.randomUUID().toString()));
             }
 
             // log.info("消息发送完成{}",reasonEntity.toString());
