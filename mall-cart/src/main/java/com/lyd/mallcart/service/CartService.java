@@ -3,6 +3,7 @@ package com.lyd.mallcart.service;
 import com.lyd.mallcart.vo.Cart;
 import com.lyd.mallcart.vo.CartItem;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -67,4 +68,6 @@ public interface CartService {
     void countItem(Long skuId, Integer num);
 
     void deleteItem(Long skuId);
+
+    List<CartItem> getUserCartItems();
 }

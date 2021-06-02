@@ -113,6 +113,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
             JSONObject jsonObject = JSON.parseObject(forObject);
             memberEntity.setNickname((String) jsonObject.get("name"));
             memberEntity.setSocialUid(jsonObject.get("id").toString());
+            memberEntity.setId(Long.parseLong(jsonObject.get("id").toString()));
             QueryWrapper<MemberEntity> eq = new QueryWrapper<MemberEntity>().eq("social_uid", jsonObject.get("id").toString());
             Integer integer = baseMapper.selectCount(eq);
             if (integer>0){

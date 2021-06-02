@@ -43,7 +43,9 @@ public class Cart {
         BigDecimal amout = new BigDecimal("0");
         if (items!=null&& items.size()>0){
             for (CartItem item : items) {
-                amout = amout.add(item.getTotalPrice());
+                if (item.getCheck()){
+                    amout = amout.add(item.getTotalPrice());
+                }
             }
         }
         return amout.subtract(getReduce());
