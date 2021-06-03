@@ -6,6 +6,7 @@ import com.lyd.mall.order.entity.OrderEntity;
 import com.lyd.mall.order.vo.OrderConfirmVo;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 订单
@@ -25,6 +26,6 @@ public interface OrderService extends IService<OrderEntity> {
      * @Author: Liuyunda
      * @Date: 2021/6/2
      */
-    OrderConfirmVo confirmOrder();
+    OrderConfirmVo confirmOrder() throws ExecutionException, InterruptedException;
 }
 

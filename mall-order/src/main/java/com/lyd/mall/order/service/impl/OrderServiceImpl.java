@@ -17,9 +17,14 @@ import com.lyd.mall.order.vo.OrderConfirmVo;
 import com.lyd.mall.order.vo.OrderItemVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 @Service("orderService")
@@ -30,6 +35,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     CartFeignService cartFeignService;
+
+    @Autowired
+    ThreadPoolExecutor executor;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -42,18 +50,29 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     }
 
     @Override
-    public OrderConfirmVo confirmOrder() {
+    public OrderConfirmVo confirmOrder() throws ExecutionException, InterruptedException {
         OrderConfirmVo confirmVo = new OrderConfirmVo();
         MemberResponseVo memberResponseVo = LoginUserInterceptor.loginUser.get();
-        //1.远程查询所有的收货地址列表
-        List<MemberAddressVo> receiveAddress = memberFeignService.getReceiveAddress(memberResponseVo.getId());
-        confirmVo.setAddressVos(receiveAddress);
-        //2.远程查询购物车所有选中的购物项
-        List<OrderItemVo> cartItems = cartFeignService.getCurrentCartItems();
-        confirmVo.setItems(cartItems);
+
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        CompletableFuture<Void> getAddress = CompletableFuture.runAsync(() -> {
+            //1.远程查询所有的收货地址列表
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            List<MemberAddressVo> receiveAddress = memberFeignService.getReceiveAddress(memberResponseVo.getId());
+            confirmVo.setAddressVos(receiveAddress);
+        }, executor);
+
+        CompletableFuture<Void> getCart = CompletableFuture.runAsync(() -> {
+            //2.远程查询购物车所有选中的购物项
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            List<OrderItemVo> cartItems = cartFeignService.getCurrentCartItems();
+            confirmVo.setItems(cartItems);
+        }, executor);
         //3.查询用户的积分
         Integer integration = memberResponseVo.getIntegration();
         confirmVo.setIntegration(integration);
+
+        CompletableFuture.allOf(getAddress,getCart).get();
         // todo 防重令牌
         return confirmVo;
     }

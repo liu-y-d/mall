@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @Author Liuyunda
@@ -21,7 +22,7 @@ public class OrderWebController {
     @Autowired
     OrderService orderService;
     @GetMapping("/toTrade")
-    public String toTrade(Model model, HttpServletRequest request){
+    public String toTrade(Model model, HttpServletRequest request) throws ExecutionException, InterruptedException {
         // 展示订单确认页信息
         OrderConfirmVo confirmVo = orderService.confirmOrder();
         model.addAttribute("orderConfirm",confirmVo);
