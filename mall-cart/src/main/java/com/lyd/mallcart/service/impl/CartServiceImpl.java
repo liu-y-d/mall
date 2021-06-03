@@ -160,8 +160,9 @@ public class CartServiceImpl implements CartService {
             List<CartItem> cartItems = getCartItems(CART_PREFIX + userInfoTo.getUserId());
             List<CartItem> collect = cartItems.stream().filter(CartItem::getCheck).map(cartItem -> {
                 // 更新最新价格
-                BigDecimal price = feignService.getPrice(cartItem.getSkuId());
-                cartItem.setPrice(price);
+                R price = feignService.getPrice(cartItem.getSkuId());
+                String data = (String) price.get("data");
+                cartItem.setPrice(new BigDecimal(data));
                 return cartItem;
             }).collect(Collectors.toList());
             return collect;
