@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author Liuyunda
@@ -44,6 +45,18 @@ public class OrderConfirmVo {
     @Setter
     @Getter
     String orderToken;
+    @Setter
+    @Getter
+    Map<Long,Boolean> stocks;
+    public Integer getCount(){
+        Integer i = 0;
+        if (items != null) {
+            for (OrderItemVo item : items) {
+                i+=item.getCount();
+            }
+        }
+        return i;
+    }
     /**
      * 订单总额
      */
