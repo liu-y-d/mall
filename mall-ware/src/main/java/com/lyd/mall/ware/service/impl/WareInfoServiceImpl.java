@@ -11,6 +11,7 @@ import com.lyd.mall.ware.dao.WareInfoDao;
 import com.lyd.mall.ware.entity.WareInfoEntity;
 import com.lyd.mall.ware.feign.MemberFeignService;
 import com.lyd.mall.ware.service.WareInfoService;
+import com.lyd.mall.ware.vo.FareVo;
 import com.lyd.mall.ware.vo.MemberAddressVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,13 +43,17 @@ public class WareInfoServiceImpl extends ServiceImpl<WareInfoDao, WareInfoEntity
     }
 
     @Override
-    public BigDecimal getFare(Long addrId) {
+    public FareVo getFare(Long addrId) {
+        FareVo fareVo = new FareVo();
         R info = memberFeignService.addrInfo(addrId);
         MemberAddressVo data = info.getData("memberReceiveAddress",new TypeReference<MemberAddressVo>() {
         });
         if (data!=null){
             String phone = data.getPhone();
-            return new BigDecimal(phone.substring(phone.length()-1));
+            BigDecimal bigDecimal = new BigDecimal(phone.substring(phone.length() - 1));
+            fareVo.setAddress(data);
+            fareVo.setFare(bigDecimal);
+            return fareVo;
         }
         return null;
     }

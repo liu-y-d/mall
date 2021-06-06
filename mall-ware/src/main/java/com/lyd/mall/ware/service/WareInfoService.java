@@ -3,8 +3,8 @@ package com.lyd.mall.ware.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lyd.common.utils.PageUtils;
 import com.lyd.mall.ware.entity.WareInfoEntity;
+import com.lyd.mall.ware.vo.FareVo;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -21,10 +21,10 @@ public interface WareInfoService extends IService<WareInfoEntity> {
     /**
      * @Description: 根据收货地址计算运费
      * @Param: [addrId]
-     * @return: java.math.BigDecimal
+     * @return: com.lyd.mall.ware.vo.FareVo
      * @Author: Liuyunda
-     * @Date: 2021/6/3
+     * @Date: 2021/6/6
      */
-    BigDecimal getFare(Long addrId);
+    FareVo getFare(Long addrId);
 }
 

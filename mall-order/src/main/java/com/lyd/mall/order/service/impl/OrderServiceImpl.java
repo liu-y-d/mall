@@ -8,6 +8,7 @@ import com.lyd.common.utils.PageUtils;
 import com.lyd.common.utils.Query;
 import com.lyd.common.utils.R;
 import com.lyd.common.vo.MemberResponseVo;
+import com.lyd.mall.order.constant.OrderConstant;
 import com.lyd.mall.order.dao.OrderDao;
 import com.lyd.mall.order.entity.OrderEntity;
 import com.lyd.mall.order.feign.CartFeignService;
@@ -15,20 +16,22 @@ import com.lyd.mall.order.feign.MemberFeignService;
 import com.lyd.mall.order.feign.WmsFeignService;
 import com.lyd.mall.order.interceptor.LoginUserInterceptor;
 import com.lyd.mall.order.service.OrderService;
-import com.lyd.mall.order.vo.MemberAddressVo;
-import com.lyd.mall.order.vo.OrderConfirmVo;
-import com.lyd.mall.order.vo.OrderItemVo;
-import com.lyd.mall.order.vo.SkuStockVo;
+import com.lyd.mall.order.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -46,6 +49,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     ThreadPoolExecutor executor;
+
+    @Autowired
+    StringRedisTemplate redisTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -90,9 +96,40 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         Integer integration = memberResponseVo.getIntegration();
         confirmVo.setIntegration(integration);
 
+        // 4.防重令牌
+        String token = UUID.randomUUID().toString().replace("-","");
+        redisTemplate.opsForValue().set(OrderConstant.USER_ORDER_TOKEN_PREFIX+memberResponseVo.getId(),token,30, TimeUnit.MINUTES);
+        confirmVo.setOrderToken(token);
         CompletableFuture.allOf(getAddress,getCart).get();
-        // todo 防重令牌
+
         return confirmVo;
+    }
+
+    @Override
+    public SubmitOrderResponseVo submitOrder(OrderSubmitVo vo) {
+        SubmitOrderResponseVo submitOrderResponseVo = new SubmitOrderResponseVo();
+        // 下单，区创建订单，校验令牌，校验价格，锁库存
+        // 1.验证令牌，返回0（令牌校验失败）-1
+        String script = "if redis.call('get',KEYS[1]) == ARGV[1] then return redis.call('del',KEYS[1]) else retrun 0 end";
+        String orderToken = vo.getOrderToken();
+        MemberResponseVo memberResponseVo = LoginUserInterceptor.loginUser.get();
+        // 原子验证令牌和删除令牌
+        Long result = redisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Arrays.asList(OrderConstant.USER_ORDER_TOKEN_PREFIX + memberResponseVo.getId()), orderToken);
+        if (result==0L){
+            // 令牌验证失败
+            submitOrderResponseVo.setCode(1);
+            return submitOrderResponseVo;
+        }else{
+
+        }
+        // String redisToken = redisTemplate.opsForValue().get(OrderConstant.USER_ORDER_TOKEN_PREFIX + memberResponseVo.getId());
+        // if (orderToken!=null && orderToken.equals(redisToken)){
+        //     // 令牌验证成功
+        //
+        // }else{
+        //     // 不通过
+        // }
+        return submitOrderResponseVo;
     }
 
 }
