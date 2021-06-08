@@ -1,10 +1,13 @@
 package com.lyd.mall.ware.controller;
 
+import com.lyd.common.exception.BizCodeEnume;
+import com.lyd.common.exception.NoStockException;
 import com.lyd.common.utils.PageUtils;
 import com.lyd.common.utils.R;
 import com.lyd.mall.ware.entity.WareSkuEntity;
 import com.lyd.mall.ware.service.WareSkuService;
 import com.lyd.mall.ware.vo.SkuHasStockVo;
+import com.lyd.mall.ware.vo.WareSkuLockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +29,16 @@ import java.util.Map;
 public class WareSkuController {
     @Autowired
     private WareSkuService wareSkuService;
+
+    @PostMapping("/lock/order")
+    public R orderLockStock(@RequestBody WareSkuLockVo vo){
+        try {
+            Boolean stockResults= wareSkuService.orderLockStock(vo);
+            return R.ok();
+        } catch (NoStockException e){
+            return R.error(BizCodeEnume.NO_STOCK_EXCEPTION.getCode(),BizCodeEnume.NO_STOCK_EXCEPTION.getMessage());
+        }
+    }
 
 
     /**
