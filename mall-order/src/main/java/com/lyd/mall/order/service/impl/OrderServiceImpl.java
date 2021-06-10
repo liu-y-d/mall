@@ -24,6 +24,7 @@ import com.lyd.mall.order.service.OrderItemService;
 import com.lyd.mall.order.service.OrderService;
 import com.lyd.mall.order.to.OrderCreateTo;
 import com.lyd.mall.order.vo.*;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -119,7 +120,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
         return confirmVo;
     }
+    // 本地事务在分布式系统下，只能控制住自己的回滚，控制不了其他服务的回滚
+    // 分布式事务：最大原因，网络问题。
 
+    @GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo vo) {
@@ -145,7 +149,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             BigDecimal payPrice = vo.getPayPrice();
             if (Math.abs(payAmount.subtract(payPrice).doubleValue())<0.01) {
                 // 金额对比成功
-                // 保存订单
+                // todo 保存订单
                 saveOrder(order);
                 // 锁库存，只要有异常回滚订单数据
                 WareSkuLockVo wareSkuLockVo = new WareSkuLockVo();
@@ -158,11 +162,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     return orderItemVo;
                 }).collect(Collectors.toList());
                 wareSkuLockVo.setLocks(orderItemVos);
-                // 远程锁库存
+                // todo 远程锁库存
                 R r = wmsFeignService.orderLockStock(wareSkuLockVo);
                 if (((Integer) r.get("code")) == 0) {
                     // 锁成功
                     submitOrderResponseVo.setOrder(order.getOrder());
+                    // todo 远程扣减积分
+                    int i = 10/0;
                     return submitOrderResponseVo;
                 }else {
                     // 锁定失败
