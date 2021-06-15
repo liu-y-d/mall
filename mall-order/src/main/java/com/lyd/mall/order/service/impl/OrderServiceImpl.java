@@ -185,6 +185,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
     }
 
+    @Override
+    public OrderEntity getOrderByOrderSn(String orderSn) {
+        OrderEntity order_sn = this.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderSn));
+        return order_sn;
+    }
+
     private void saveOrder(OrderCreateTo order) {
         OrderEntity orderEntity = order.getOrder();
         orderEntity.setModifyTime(new Date());
@@ -253,7 +259,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         entity.setMemberId(memberResponseVo.getId());
         // 获取收货地址信息
         OrderSubmitVo orderSubmitVo = submitVoThreadLocal.get();
-        R fare = wmsFeignService.getFare(orderSubmitVo.getAddrId());
+        R fare = wmsFeignService.getFare(orderSubmitVo.getAddrId()==null? Long.valueOf("") :orderSubmitVo.getAddrId());
         FareVo data = fare.getData(new TypeReference<FareVo>() {
         });
         // 设置运费信息

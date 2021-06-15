@@ -3,6 +3,7 @@ package com.lyd.mall.order.interceptor;
 import com.lyd.common.constant.AuthServerConstant;
 import com.lyd.common.vo.MemberResponseVo;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +20,10 @@ public class LoginUserInterceptor implements HandlerInterceptor {
     public static ThreadLocal<MemberResponseVo> loginUser = new ThreadLocal<>();
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        boolean match = new AntPathMatcher().match("/order/order/status/**", request.getRequestURI());
+        if (match){
+            return true;
+        }
         MemberResponseVo attribute = (MemberResponseVo) request.getSession().getAttribute(AuthServerConstant.LOGIN_USER);
         if (attribute!=null){
             loginUser.set(attribute);

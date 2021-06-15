@@ -30,5 +30,12 @@
 
     </select>
 
+    <update id="unLockStock">
+        update wms_ware_sku
+        set stock_locked = stock_locked - #{num}
+        where sku_id = #{skuId}
+          and ware_id = #{wareId}
+    </update>
+
 
 </mapper>
