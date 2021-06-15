@@ -24,7 +24,6 @@ import com.lyd.mall.order.service.OrderItemService;
 import com.lyd.mall.order.service.OrderService;
 import com.lyd.mall.order.to.OrderCreateTo;
 import com.lyd.mall.order.vo.*;
-import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -123,7 +122,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     // 本地事务在分布式系统下，只能控制住自己的回滚，控制不了其他服务的回滚
     // 分布式事务：最大原因，网络问题。
 
-    @GlobalTransactional
+    // @GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo vo) {
@@ -163,6 +162,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 }).collect(Collectors.toList());
                 wareSkuLockVo.setLocks(orderItemVos);
                 // todo 远程锁库存
+                // 为了保证高并发，库存服务自己回滚。可以发消息给库存服务
+                // 库存服务本身可以使用自动解锁，消息
                 R r = wmsFeignService.orderLockStock(wareSkuLockVo);
                 if (((Integer) r.get("code")) == 0) {
                     // 锁成功

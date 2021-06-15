@@ -78,6 +78,14 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         return new PageUtils(page);
     }
 
+    /**
+     * @Description: 适合Seata ，AT事务
+     * @Param: [vo]
+     * @return: void
+     * @Author: Liuyunda
+     * @Date: 2021/6/11
+     */
+    // @GlobalTransactional
     @Transactional
     @Override
     public void saveSpuInfo(SpuSaveVo vo) {
