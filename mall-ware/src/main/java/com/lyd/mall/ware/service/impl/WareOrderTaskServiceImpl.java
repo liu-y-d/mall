@@ -1,16 +1,16 @@
 package com.lyd.mall.ware.service.impl;
 
-import org.springframework.stereotype.Service;
-import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyd.common.utils.PageUtils;
 import com.lyd.common.utils.Query;
-
 import com.lyd.mall.ware.dao.WareOrderTaskDao;
 import com.lyd.mall.ware.entity.WareOrderTaskEntity;
 import com.lyd.mall.ware.service.WareOrderTaskService;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 
 @Service("wareOrderTaskService")
@@ -24,6 +24,11 @@ public class WareOrderTaskServiceImpl extends ServiceImpl<WareOrderTaskDao, Ware
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public WareOrderTaskEntity getOrderTaskByOrderSn(String orderSn) {
+        return this.getOne(new QueryWrapper<WareOrderTaskEntity>().eq("order_sn",orderSn));
     }
 
 }

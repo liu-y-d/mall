@@ -7,6 +7,7 @@ package com.lyd.mall.ware.listener;
  * @Description: TODO
  */
 
+import com.lyd.common.to.mq.OrderTo;
 import com.lyd.common.to.mq.StockLockedTo;
 import com.lyd.mall.ware.service.WareSkuService;
 import com.rabbitmq.client.Channel;
@@ -44,8 +45,18 @@ public class StockReleaseListener {
             e.printStackTrace();
             channel.basicReject(message.getMessageProperties().getDeliveryTag(),true);
         }
+    }
 
+    @RabbitHandler
+    public void handleOrderCloseRelease(OrderTo orderTo, Message message, Channel channel) throws IOException {
+        System.out.println("订单关闭准备解锁库存。。。");
+        try{
+            wareSkuService.unlockStock(orderTo);
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            channel.basicReject(message.getMessageProperties().getDeliveryTag(),true);
 
-
+        }
     }
 }
