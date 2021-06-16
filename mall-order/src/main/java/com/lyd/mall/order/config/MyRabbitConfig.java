@@ -67,6 +67,8 @@ public class MyRabbitConfig {
              */
             @Override
             public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+                // 消息收到了
+                // 修改消息的状态
                 System.out.println("correlationData:"+correlationData);
                 System.out.println("ack:"+ack);
                 System.out.println("cause:"+cause);
@@ -75,7 +77,7 @@ public class MyRabbitConfig {
         // 设置消息抵达队列的确认回调
         rabbitTemplate.setReturnCallback(new RabbitTemplate.ReturnCallback() {
             /**
-             * @Description: 只要休息奥没有投递给指定的队列，就触发这个失败回调
+             * @Description: 只要消息没有投递给指定的队列，就触发这个失败回调
              * @Param: [message 投递失败的消息详细信息, replyCode 回复的状态码, replyText 回复的文本内容, exchange 当时这个消息发给哪个交换机, routingKey 当时这个消息用哪个路由键]
              * @return: void
              * @Author: Liuyunda
@@ -83,6 +85,7 @@ public class MyRabbitConfig {
              */
             @Override
             public void returnedMessage(Message message, int replyCode, String replyText, String exchange, String routingKey) {
+                // 报错误了。修改数据当前消息的错误状态——》错误
                 System.out.println("message:"+message);
                 System.out.println("replyCode:"+replyCode);
                 System.out.println("replyText:"+replyText);
